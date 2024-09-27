@@ -3,6 +3,7 @@
 #include <QLabel>
 #include <QMessageBox>
 #include <QLineEdit>
+#include <QListWidget>
 #include <QPushButton>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
@@ -13,6 +14,7 @@ int main(int argc, char *argv[]) {
 
   QWidget window;
   window.setWindowTitle("Financial Tracker");
+  window.setMinimumSize(600,400);
 
   //Title 
   QLabel titleLabel("Financial Tracker");
@@ -46,19 +48,62 @@ int main(int argc, char *argv[]) {
 
   incomeEdit.setText(QString::number(savedIncome));
   
-  //Expenses List 
+  //Expenses List - Title
   QVBoxLayout *expenseLayout = new QVBoxLayout;
+  QHBoxLayout *expenseHeaderLayout = new QHBoxLayout;
   QLabel expenseListLabel("List of Expenses:");
   expenseListLabel.setStyleSheet("font-size: 32px;");
-  expenseLayout->addWidget(&expenseListLabel);
+  expenseListLabel.setMaximumWidth(350);
 
-  //App Layout 
+  //Expense List - Actual List 
+  QListWidget *expenseList = new QListWidget;
+  expenseLayout->addWidget(expenseList);
+
+  //Add to Expense List Button 
+  QPushButton addExpense("Add Expense");
+  addExpense.setStyleSheet("background-color: white; color: black; font-size: 32px;");
+  
+  //Add Expense Dialouge Box 
+  QDialog addExpenseDialog;
+  QVBoxLayout *addExpenseLayout = new QVBoxLayout;
+  QLabel addExpenseLabel("Enter New Expense:");
+  addExpenseLayout->addWidget(&addExpenseLabel);
+  QLineEdit addExpenseEdit;
+  addExpenseLayout->addWidget(&addExpenseEdit);
+  QPushButton addExpenseConfirm("Add");
+  addExpenseLayout->addWidget(&addExpenseConfirm);
+  addExpenseDialog.setLayout(addExpenseLayout);
+
+  //Button Funcitonality
+ QObject::connect(&addExpense, &QPushButton::clicked, [&addExpenseDialog]() {
+      addExpenseDialog.exec();
+  });
+ 
+ QObject::connect(&addExpenseConfirm, &QPushButton::clicked, [&addExpenseEdit, expenseList, &addExpenseDialog]() {
+     QString newExpense = addExpenseEdit.text();
+     if (!newExpense.isEmpty()) {
+      expenseList->addItem(newExpense);
+      addExpenseDialog.close();
+      }
+  });
+
+ //Expense Layout 
+ expenseHeaderLayout->addWidget(&expenseListLabel);
+ expenseHeaderLayout->addWidget(&addExpense);
+ expenseLayout->addLayout(expenseHeaderLayout);
+ QWidget *expenseWidget = new QWidget;
+ expenseWidget->setLayout(expenseLayout);
+ 
+ //App Layout 
   QVBoxLayout layout;
   layout.addWidget(&titleLabel);
   layout.addWidget(incomeWidget);
-  layout.addWidget(&expenseListLabel);
+  layout.addWidget(expenseWidget);
+  for (int i = 0; i < expenseLayout->count(); ++i) {
+    layout.addWidget(expenseLayout->itemAt(i)->widget());
+  }
 
-  window.setStyleSheet("background-color: black; color: green;");
+  window.setStyleSheet("background-color: black; color: green; font-size: 32px;");
   window.setLayout(&layout);
   window.show();
 
